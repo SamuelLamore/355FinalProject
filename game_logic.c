@@ -4,7 +4,7 @@ int marioGrounded = FALSE;
 int marioVelocity = 0;
 
 #define TICK_SPEED 20000
-#define PHYSICS_SPEED 200000
+#define PHYSICS_SPEED 140000
 
 
 void update_debug_layer() {
@@ -65,48 +65,56 @@ void calculate_gravity() {
     }
 
     if (!marioGrounded) {
-        marioVelocity -= 1; // the effect of gravity, if mario is not on the ground already
+        if (marioVelocity >= 0) {
+            marioVelocity -= 1; // the effect of gravity, if mario is not on the ground already
+        }
     } else {
         marioVelocity = 0;
     }
 }
 
+void get_input() {
+    int ch = getch();
+    if (ch == ' ' && marioGrounded) {
+        marioVelocity = 2;
+    }
+}
 
 void run_game_physics(void) {
+    get_input();
     calculate_gravity();
-    //[todo] get input
 
     //update based on input/physics
+    //[TODO] detect if mario is horizontally colliding with the ground/walls, push him back if so
+
     set_mario_position(marioX, marioY);
     scroll_level();
+
+    //[TODO] detect if mario is on top of a star (need a dedicated star layer most likely), activate invincibility if so
+    //[TODO] detect if mario is on top of something in the obstacles layer, kill him if so
 }
 
 
 void run_game(void) {
-    initscr();
-    set_up_colors();
-    clear();
-    curs_set(0);
-
+    //input stuff
+    noecho();
+    nodelay(stdscr, TRUE);
 
     init_layers();
 
     int ticks = 0;
-    // int autoJump = 0;
+    int gameTimer = 0;
     while (1) {
         usleep(TICK_SPEED);
+
+        //Everything in this if statement only happens once every 'PHYSICS_SPEED' microseconds. Anything outside the loop is done every 'TICK_SPEED' microseconds.
         if (ticks++ >= PHYSICS_SPEED / TICK_SPEED) {
             ticks = 0;
             run_game_physics();
-            // if (marioGrounded) {
-            //     if (autoJump++ > 3) {
-            //         marioVelocity = 2;
-            //     }
-            // } else {
-            //     autoJump = 0;
-            // }
-        }
+            gameTimer++;
 
+            //[TODO] randomly generate a star powerup
+        }
 
         update_debug_layer();
         assemble_layers();
