@@ -13,6 +13,25 @@ void update_debug_layer() {
     } else {
         debug_layer[0][2] = ' ';
     }
+
+
+    char scroll[4];
+    snprintf(scroll, sizeof(scroll), "%03d", scrollX);
+    debug_layer[0][99] = scroll[2];
+    debug_layer[0][98] = scroll[1];
+    debug_layer[0][97] = scroll[0];
+
+
+    debug_layer[0][5] = 'V';
+    debug_layer[0][6] = '=';
+    if (marioVelocity < 0) {
+        debug_layer[0][7] = '-';
+    } else {
+        debug_layer[0][7] = ' ';
+    }
+
+    debug_layer[0][8] = '0' + ((marioVelocity > 0) ? marioVelocity : -marioVelocity);
+
 }
 
 
