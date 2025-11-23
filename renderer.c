@@ -1,6 +1,27 @@
 char screen[16][101]; // 101 because of the termination character (\0)
 short color_screen[16][100];
 
+char debug_layer[16][101];
+char *debug_layer_init[16] = {
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+    "                                                                                                    ",
+};
+
+
 char border_layer[16][101];
 char *border_layer_init[16] = {
     "                                                                                                    ",
@@ -107,16 +128,18 @@ char *background_layer_init[16] = {
 };
 
 
-#define NUM_LAYERS 5
+#define NUM_LAYERS 6
 enum layers {
-    BG_LAYER = 0,
-    GROUND_LAYER = 1,
-    OBS_LAYER = 2,
-    MARIO_LAYER = 3,
-    BORDER_LAYER = 4,
+    DEBUG_LAYER = 1,
+    BG_LAYER = 1,
+    GROUND_LAYER = 2,
+    OBS_LAYER = 3,
+    MARIO_LAYER = 4,
+    BORDER_LAYER = 5,
 };
 
 char (*layers[NUM_LAYERS])[101] = {
+    debug_layer,
     background_layer,
     ground_layer,
     obstacles_layer,
@@ -126,6 +149,7 @@ char (*layers[NUM_LAYERS])[101] = {
 
 
 char **layer_init[NUM_LAYERS] = { 
+    debug_layer_init,
     background_layer_init,
     ground_layer_init,
     obstacles_layer_init,
@@ -134,6 +158,7 @@ char **layer_init[NUM_LAYERS] = {
 };
 
 int layer_colors[NUM_LAYERS] = {
+    1,   // debug
     1,   // background
     2,   // ground
     3,   // obstacles
@@ -143,7 +168,12 @@ int layer_colors[NUM_LAYERS] = {
 
 
 void set_mario_position(int x, int y) {
-    y = 15 - y;
+    if (y < 3) { // set height bounds
+        y = 3;
+    } else if (y > 14) {
+        y = 14;
+    }
+
     for (int y = 0; y < 16; y++) {
         for (int x = 0; x < 100; x++) {
             mario_layer[y][x] = ' ';
