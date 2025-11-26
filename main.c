@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -12,6 +13,7 @@
 #define COLOR256(r, g, b) (16 + 36*r + 6*g + b)
 
 
+#include "helper_functions.c"
 #include "renderer.c"
 #include "game_logic.c"
 

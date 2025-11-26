@@ -2,6 +2,8 @@ int marioX = 10;
 int marioY = 13;
 int marioGrounded = FALSE;
 int marioVelocity = 0;
+int marioInvincible = FALSE;
+int marioInvincibilityTimer = 0;
 
 #define TICK_SPEED 20000
 #define PHYSICS_SPEED 140000
@@ -32,6 +34,18 @@ void update_debug_layer() {
 
     debug_layer[0][8] = '0' + ((marioVelocity > 0) ? marioVelocity : -marioVelocity);
 
+
+    debug_layer[0][11] = 'R';
+    debug_layer[0][12] = '=';
+    debug_layer[0][13] = '0' + r;
+
+    debug_layer[0][15] = 'G';
+    debug_layer[0][16] = '=';
+    debug_layer[0][17] = '0' + g;
+
+    debug_layer[0][19] = 'B';
+    debug_layer[0][20] = '=';
+    debug_layer[0][21] = '0' + b;
 }
 
 
@@ -80,6 +94,24 @@ void get_input() {
     }
 }
 
+
+void check_powerup() {
+    if (
+        powerups_layer[marioY][marioX] != ' ' ||
+        powerups_layer[marioY-1][marioX] != ' ' ||
+        powerups_layer[marioY][marioX+1] != ' ' ||
+        powerups_layer[marioY-1][marioX+1] != ' '
+        ) { // check ground tile
+            powerups_layer[marioY][marioX] = ' ';
+            powerups_layer[marioY-1][marioX] = ' ';
+            powerups_layer[marioY][marioX+1] = ' ';
+            powerups_layer[marioY-1][marioX+1] = ' ';
+
+            marioInvincible = TRUE;
+            marioInvincibilityTimer = 75;
+    }
+}
+
 void run_game_physics(void) {
     get_input();
     calculate_gravity();
@@ -90,8 +122,16 @@ void run_game_physics(void) {
     set_mario_position(marioX, marioY);
     scroll_level();
 
-    //[TODO] detect if mario is on top of a star (need a dedicated star layer most likely), activate invincibility if so
+    check_powerup();
+        
     //[TODO] detect if mario is on top of something in the obstacles layer, kill him if so
+
+    if (marioInvincible) {
+        if (marioInvincibilityTimer-- <= 0) {
+            marioInvincible = FALSE;
+        }
+    }
+
 }
 
 
@@ -104,7 +144,9 @@ void run_game(void) {
 
     int ticks = 0;
     int gameTimer = 0;
+    int globalTimer = 0;
     while (1) {
+        globalTimer++;
         usleep(TICK_SPEED);
 
         //Everything in this if statement only happens once every 'PHYSICS_SPEED' microseconds. Anything outside the loop is done every 'TICK_SPEED' microseconds.
@@ -114,6 +156,13 @@ void run_game(void) {
             gameTimer++;
 
             //[TODO] randomly generate a star powerup
+        }
+
+        if (marioInvincible) {
+            update_invincibility_colors(globalTimer, marioInvincibilityTimer);
+        } else {
+            init_pair(4, COLOR_RED, COLOR_BLACK);  // restore mario layer
+            init_pair(5, COLOR256(0, 0, 1), COLOR256(0, 0, 1));  // restore border layer
         }
 
         update_debug_layer();

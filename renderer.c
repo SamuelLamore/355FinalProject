@@ -69,6 +69,26 @@ char *mario_layer_init[16] = {
 };
 
 
+char powerups_layer[16][101];
+char *powerups_layer_init[16] = {
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                     S                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+    "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+};
+
 char obstacles_layer[16][101];
 char *obstacles_layer_init[16] = {
     "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
@@ -131,20 +151,22 @@ char *background_layer_init[16] = {
 };
 
 
-#define NUM_LAYERS 6
+#define NUM_LAYERS 7
 enum layers {
     BG_LAYER = 0,
     GROUND_LAYER = 1,
     OBS_LAYER = 2,
-    MARIO_LAYER = 3,
-    BORDER_LAYER = 4,
-    DEBUG_LAYER = 5,
+    STAR_LAYER = 3,
+    MARIO_LAYER = 4,
+    BORDER_LAYER = 5,
+    DEBUG_LAYER = 6,
 };
 
 char (*layers[NUM_LAYERS])[101] = {
     background_layer,
     ground_layer,
     obstacles_layer,
+    powerups_layer,
     mario_layer,
     border_layer,
     debug_layer,
@@ -155,6 +177,7 @@ char **layer_init[NUM_LAYERS] = {
     background_layer_init,
     ground_layer_init,
     obstacles_layer_init,
+    powerups_layer_init,
     mario_layer_init,
     border_layer_init,
     debug_layer_init,
@@ -164,6 +187,7 @@ int layer_colors[NUM_LAYERS] = {
     1,   // background
     2,   // ground
     3,   // obstacles
+    7,   // powerup/star
     4,   // mario
     5,   // border
     1,   // debug
@@ -217,6 +241,30 @@ void scroll_level() {
     } 
 }
 
+short r = 0;
+short g = 0;
+short b = 0;
+
+void update_invincibility_colors(int timer, int invincTimer) {
+    int hue = (timer << 3) % 360;
+    float sat = 1.0f;
+    float val = 0.8f;
+
+    if (invincTimer < 15) {
+        if ((invincTimer % 6) <= 2) {
+            val = 0.6f;
+            sat = 0.2f;
+        }
+    }
+
+    hsv_to_rgb(hue, sat, val, &r, &g, &b);
+
+    //update mario layer and border layer
+    init_pair(4, COLOR256(r, g, b), COLOR_BLACK);
+    init_pair(5, COLOR256(r, g, b), COLOR256(r, g, b));
+}
+
+
 
 void set_up_colors() {
     start_color();
@@ -226,6 +274,7 @@ void set_up_colors() {
     init_pair(4, COLOR_RED, COLOR_BLACK);  // mario layer
     init_pair(5, COLOR256(0, 0, 1), COLOR256(0, 0, 1));  // border layer
     init_pair(6, COLOR_BLACK, COLOR_BLACK);  // EMPTY layer
+    init_pair(7, COLOR_YELLOW, COLOR_BLACK);  // Star/Powerup layer
 }
 
 
