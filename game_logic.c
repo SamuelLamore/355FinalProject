@@ -135,7 +135,45 @@ void run_game_physics(void) {
 }
 
 
-void run_game(void) {
+int check_if_star_exists() {
+    for (int y = 2; y < 15; y++) {
+        for (int x = 0; x < 100; x++) {
+            if (powerups_layer[y][x] != ' ') {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+void spawn_star() {
+    if (check_if_star_exists()) { // can't spawn a star if one already exists
+        return;
+    }
+
+    //search from y=3 to y=15 starting from the middle
+    for (int i = 0; i < 6; i++) {
+        if (ground_layer[9+i][99] != ' ' && ground_layer[9+i-1][99] == ' ') {
+            if (ground_layer[9+i-2][99] == ' ' && rand() & 1) {
+                powerups_layer[9+i-2][99] = 'S';
+            } else {
+                powerups_layer[9+i-1][99] = 'S';
+            }
+            break;
+        } else if (ground_layer[9-i][99] != ' ' && ground_layer[9-i-1][99] == ' ') {
+            if (ground_layer[9-i-2][99] == ' ' && rand() & 1) {
+                powerups_layer[9-i-2][99] = 'S';
+            } else {
+                powerups_layer[9-i-1][99] = 'S';
+            }
+            break;
+        }
+    }
+
+
+}
+
+void run_game() {
     //input stuff
     noecho();
     nodelay(stdscr, TRUE);
@@ -155,7 +193,11 @@ void run_game(void) {
             run_game_physics();
             gameTimer++;
 
-            //[TODO] randomly generate a star powerup
+            if (gameTimer % 20 == 0) {
+                if (rand() % 10 == 0) {
+                    spawn_star();
+                }
+            }
         }
 
         if (marioInvincible) {
