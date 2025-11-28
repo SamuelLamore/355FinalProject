@@ -1,4 +1,4 @@
-int marioX = 10;
+int marioX = 20;
 int marioY = 13;
 int marioGrounded = FALSE;
 int marioVelocity = 0;
@@ -87,6 +87,20 @@ void calculate_gravity() {
     }
 }
 
+
+void check_wall_collisions(void) {
+    if (check_ground(marioX+2, marioY) || check_ground(marioX+2, marioY-1)) {
+        marioX--;
+        if (marioX < 1) {
+            //[todo] death function
+            endwin();
+            curs_set(1);
+            exit(0);
+        }
+    }
+}
+
+
 void get_input() {
     int ch = getch();
     if (ch == ' ' && marioGrounded) {
@@ -117,7 +131,7 @@ void run_game_physics(void) {
     calculate_gravity();
 
     //update based on input/physics
-    //[TODO] detect if mario is horizontally colliding with the ground/walls, push him back if so
+    check_wall_collisions();
 
     set_mario_position(marioX, marioY);
     scroll_level();
