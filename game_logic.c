@@ -4,6 +4,8 @@ int marioGrounded = FALSE;
 int marioVelocity = 0;
 int marioInvincible = FALSE;
 int marioInvincibilityTimer = 0;
+int marioAlive = TRUE;  // Added by Abraham
+int gameWon = FALSE; // Added by Abraham
 
 #define TICK_SPEED 20000
 #define PHYSICS_SPEED 140000
@@ -126,6 +128,66 @@ void check_powerup() {
     }
 }
 
+// Added by Abraham
+void check_enemy_collision() {
+    // Check if mario hits an obstacle (enemy)
+    if (!marioInvincible) {
+        if (
+            obstacles_layer[marioY][marioX] != ' ' ||
+            obstacles_layer[marioY-1][marioX] != ' ' ||
+            obstacles_layer[marioY][marioX+1] != ' ' ||
+            obstacles_layer[marioY-1][marioX+1] != ' '
+        ) {
+            marioAlive = FALSE;
+        }
+    }
+}
+
+// Added by Abraham
+void check_win_condition() {
+    // Win condition: mario reaches the end of the level (scrollX >= LEVEL_SIZE - 100)
+    if (scrollX >= LEVEL_SIZE - 100) {
+        gameWon = TRUE;
+    }
+}
+
+
+// Added by Abraham
+void show_game_over_screen() {
+    clear();
+    attron(COLOR_PAIR(3));
+    mvprintw(7, 40, "GAME OVER!");
+    mvprintw(9, 35, "You hit an obstacle!");
+    mvprintw(11, 32, "Press any key to exit...");
+    attroff(COLOR_PAIR(3));
+    refresh();
+    
+    nodelay(stdscr, FALSE);  // Wait for input
+    getch();
+    
+    endwin();  // Clean up ncurses before exiting
+    curs_set(1);  // Restore cursor
+    exit(0);
+}
+
+// Added by Abraham
+void show_win_screen() {
+    clear();
+    attron(COLOR_PAIR(7));
+    mvprintw(7, 40, "YOU WIN!");
+    mvprintw(9, 32, "You completed the level!");
+    mvprintw(11, 32, "Press any key to exit...");
+    attroff(COLOR_PAIR(7));
+    refresh();
+    
+    nodelay(stdscr, FALSE);  // Wait for input
+    getch();
+    
+    endwin();  // Clean up ncurses before exiting
+    curs_set(1);  // Restore cursor
+    exit(0);
+}
+
 void run_game_physics(void) {
     get_input();
     calculate_gravity();
@@ -137,8 +199,8 @@ void run_game_physics(void) {
     scroll_level();
 
     check_powerup();
-        
-    //[TODO] detect if mario is on top of something in the obstacles layer, kill him if so
+    check_enemy_collision();
+    check_win_condition();
 
     if (marioInvincible) {
         if (marioInvincibilityTimer-- <= 0) {
@@ -207,6 +269,16 @@ void run_game() {
                 if (rand() % 10 == 0) {
                     spawn_star();
                 }
+            }
+
+            // Check if game ended
+            if (!marioAlive) {
+                show_game_over_screen();
+                break;
+            }
+            if (gameWon) {
+                show_win_screen();
+                break;
             }
         }
 
