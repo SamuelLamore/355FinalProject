@@ -340,8 +340,6 @@ void assemble_layers() {
     }
 }
 
-int frame = 0;
-
 void render_screen() {
     for (int y = 0; y < 16; y++) {
         for (int x = 0; x < 100; x++) {

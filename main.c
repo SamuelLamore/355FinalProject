@@ -16,6 +16,7 @@
 #include "helper_functions.c"
 #include "renderer.c"
 #include "game_logic.c"
+#include "intro.c"
 
 
 void kill_program(int signum) {
@@ -33,7 +34,12 @@ int main() {
     clear();
     curs_set(0);
 
+    //input stuff
+    noecho();
+    nodelay(stdscr, TRUE);
+
     //[TODO] Before run_game(), there should be an intro screen that only ends if you enter a key
+    intro_screen();
 
     //run main game logic
     run_game();

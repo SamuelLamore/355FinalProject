@@ -188,10 +188,6 @@ void spawn_star() {
 }
 
 void run_game() {
-    //input stuff
-    noecho();
-    nodelay(stdscr, TRUE);
-
     init_layers();
 
     int ticks = 0;
