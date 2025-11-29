@@ -160,7 +160,7 @@ void show_game_over_screen() {
 void show_win_screen() {
     clear();
     attron(COLOR_PAIR(7));
-    mvprintw(7, 40, "Congratulations, YOU WIN!");
+    mvprintw(7, 40, "YOU WIN!");
     mvprintw(9, 32, "You completed the level!");
     mvprintw(11, 32, "Press any key to exit...");
     attroff(COLOR_PAIR(7));
