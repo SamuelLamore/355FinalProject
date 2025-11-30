@@ -6,9 +6,28 @@ int marioInvincible = FALSE;
 int marioInvincibilityTimer = 0;
 int marioAlive = TRUE;  // Added by Abraham
 int gameWon = FALSE; // Added by Abraham
+int upsideDown = FALSE;
 
-#define TICK_SPEED 20000
-#define PHYSICS_SPEED 140000
+#define TICK_SPEED       20000
+#define PHYSICS_SPEED1  140000
+#define PHYSICS_SPEED2  100000
+#define PHYSICS_SPEED3   80000
+#define PHYSICS_SPEED4   60000
+
+
+int physSpeeds[] = {
+    PHYSICS_SPEED1,
+    PHYSICS_SPEED2,
+    PHYSICS_SPEED3,
+    PHYSICS_SPEED4,
+};
+
+int physSpeedCutoffs[] = {
+    140,
+    384,
+    750,
+    9999,
+};
 
 
 void update_debug_layer() {
@@ -60,10 +79,23 @@ int check_ground(int x, int y) {
 }
 
 int check_mario_ground() {
-    if (check_ground(marioX, marioY+1) || check_ground(marioX+1, marioY+1)) { // check ground tiles
+    int addVal = (upsideDown) ? -2 : 1;
+    int unit = (upsideDown) ? -1 : 1;
+    if (check_ground(marioX, marioY+addVal) || check_ground(marioX+1, marioY+addVal) // check ground tiles
+        || (!marioGrounded && marioVelocity <= 0 && check_ground(marioX+2, marioY+addVal) && !check_ground(marioX+2, marioY+addVal+unit))) {
         return marioGrounded = TRUE;
     } else {
         return marioGrounded = FALSE;
+    }
+}
+
+
+int check_mario_ceiling() {
+    int addVal = (upsideDown) ? 1 : -2;
+    if (check_ground(marioX, marioY+addVal) || check_ground(marioX+1, marioY+addVal)) { // check ground tiles
+        return TRUE;
+    } else {
+        return FALSE;
     }
 }
 
@@ -73,10 +105,19 @@ void calculate_gravity() {
     int unitVel = (marioVelocity > 0) ? 1 : -1; // get the sign of the velocity
     check_mario_ground();
     for (int i = 0; i < absVel; i++) { // check for ground individually on each unit of velocity
-        marioY -= unitVel; // double negative here: since y+ is downwards, subtracting a positive velocity makes mario go up
+        if (!upsideDown) {
+            marioY -= unitVel; // double negative here: since y+ is downwards, subtracting a positive velocity makes mario go up
+        } else {
+            marioY += unitVel;
+        }
     
         if (check_mario_ground()) { // check ground tiles
             break; // mario is grounded so stop adding velocity
+        }
+
+        if (check_mario_ceiling()) {
+            marioVelocity = 0;
+            return; // note the return instead of break
         }
     }
 
@@ -94,10 +135,7 @@ void check_wall_collisions(void) {
     if (check_ground(marioX+2, marioY) || check_ground(marioX+2, marioY-1)) {
         marioX--;
         if (marioX < 1) {
-            //[todo] death function
-            endwin();
-            curs_set(1);
-            exit(0);
+            marioAlive = FALSE;
         }
     }
 }
@@ -157,8 +195,9 @@ void show_game_over_screen() {
     clear();
     attron(COLOR_PAIR(3));
     mvprintw(7, 40, "GAME OVER!");
-    mvprintw(9, 35, "You hit an obstacle!");
-    mvprintw(11, 32, "Press any key to exit...");
+    mvprintw(9, 38, "You have died!"); // there are 2 ways to die - hitting an obstacle, and getting crushed by the walls scrolling into the border
+    // mvprintw(9, 35, "You hit an obstacle!");
+    mvprintw(11, 33, "Press any key to exit...");
     attroff(COLOR_PAIR(3));
     refresh();
     
@@ -188,10 +227,7 @@ void show_win_screen() {
     exit(0);
 }
 
-void run_game_physics(void) {
-    get_input();
-    calculate_gravity();
-
+void run_game_physics() {
     //update based on input/physics
     check_wall_collisions();
 
@@ -255,13 +291,31 @@ void run_game() {
     int ticks = 0;
     int gameTimer = 0;
     int globalTimer = 0;
+    int physSpeedIndex = 0;
     while (1) {
         globalTimer++;
         usleep(TICK_SPEED);
 
         //Everything in this if statement only happens once every 'PHYSICS_SPEED' microseconds. Anything outside the loop is done every 'TICK_SPEED' microseconds.
-        if (ticks++ >= PHYSICS_SPEED / TICK_SPEED) {
-            ticks = 0;
+        ticks++;
+        if (ticks % (PHYSICS_SPEED1 / TICK_SPEED) == 0) {
+            if (!upsideDown) {
+                if ((scrollX+marioX) >= 436 && (scrollX+marioX) < 695 && marioY <= 8) {
+                    upsideDown = TRUE;
+                    marioVelocity = 0;
+                }
+            } else {
+                if ((scrollX+marioX) < 436 || (scrollX+marioX) > 695 || marioY > 8) {
+                    upsideDown = FALSE;
+                    marioVelocity = 0;
+                }
+            }
+
+            get_input();
+            calculate_gravity();
+        }
+        
+        if (ticks % (physSpeeds[physSpeedIndex] / TICK_SPEED) == 0) {
             run_game_physics();
             gameTimer++;
 
@@ -270,6 +324,13 @@ void run_game() {
                     spawn_star();
                 }
             }
+
+            //Control game speed
+            if (scrollX > physSpeedCutoffs[physSpeedIndex]) {
+                physSpeedIndex++;
+                //play "speed up" sequence
+            }
+        
 
             // Check if game ended
             if (!marioAlive) {
