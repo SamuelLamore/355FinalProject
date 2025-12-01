@@ -8,65 +8,83 @@ int marioAlive = TRUE;  // Added by Abraham
 int gameWon = FALSE; // Added by Abraham
 int upsideDown = FALSE;
 
+int score = 0;
+int speedUpText = FALSE;
+int speedUpTextTimer = 0;
+
 #define TICK_SPEED       20000
 #define PHYSICS_SPEED1  140000
 #define PHYSICS_SPEED2  100000
 #define PHYSICS_SPEED3   80000
-#define PHYSICS_SPEED4   60000
 
 
 int physSpeeds[] = {
     PHYSICS_SPEED1,
     PHYSICS_SPEED2,
     PHYSICS_SPEED3,
-    PHYSICS_SPEED4,
 };
 
 int physSpeedCutoffs[] = {
-    140,
-    384,
-    750,
+    150,
+    374,
     9999,
 };
 
 
-void update_debug_layer() {
-    if (marioGrounded) {
-        debug_layer[0][2] = 'G';
-    } else {
-        debug_layer[0][2] = ' ';
+// void update_debug_layer() {
+//     if (marioGrounded) {
+//         debug_layer[0][2] = 'G';
+//     } else {
+//         debug_layer[0][2] = ' ';
+//     }
+
+
+//     char scroll[4];
+//     snprintf(scroll, sizeof(scroll), "%03d", scrollX);
+//     debug_layer[0][99] = scroll[2];
+//     debug_layer[0][98] = scroll[1];
+//     debug_layer[0][97] = scroll[0];
+
+
+//     debug_layer[0][5] = 'V';
+//     debug_layer[0][6] = '=';
+//     if (marioVelocity < 0) {
+//         debug_layer[0][7] = '-';
+//     } else {
+//         debug_layer[0][7] = ' ';
+//     }
+
+//     debug_layer[0][8] = '0' + ((marioVelocity > 0) ? marioVelocity : -marioVelocity);
+
+
+//     debug_layer[0][11] = 'R';
+//     debug_layer[0][12] = '=';
+//     debug_layer[0][13] = '0' + r;
+
+//     debug_layer[0][15] = 'G';
+//     debug_layer[0][16] = '=';
+//     debug_layer[0][17] = '0' + g;
+
+//     debug_layer[0][19] = 'B';
+//     debug_layer[0][20] = '=';
+//     debug_layer[0][21] = '0' + b;
+// }
+
+#define SPEED_UP_TIMER_LENGTH 34
+
+void update_speed_up_layer() {
+
+    if (speedUpText) {
+        if (speedUpTextTimer > SPEED_UP_TIMER_LENGTH-10 && (speedUpTextTimer & 1) == 0 && marioX < 25) {
+            marioX++;
+        }
+        if (--speedUpTextTimer > 0) {
+            render_speed_up_graphic(speedUpTextTimer);
+        } else {
+            speedUpText = FALSE;
+            clear_speed_up_graphic();
+        }
     }
-
-
-    char scroll[4];
-    snprintf(scroll, sizeof(scroll), "%03d", scrollX);
-    debug_layer[0][99] = scroll[2];
-    debug_layer[0][98] = scroll[1];
-    debug_layer[0][97] = scroll[0];
-
-
-    debug_layer[0][5] = 'V';
-    debug_layer[0][6] = '=';
-    if (marioVelocity < 0) {
-        debug_layer[0][7] = '-';
-    } else {
-        debug_layer[0][7] = ' ';
-    }
-
-    debug_layer[0][8] = '0' + ((marioVelocity > 0) ? marioVelocity : -marioVelocity);
-
-
-    debug_layer[0][11] = 'R';
-    debug_layer[0][12] = '=';
-    debug_layer[0][13] = '0' + r;
-
-    debug_layer[0][15] = 'G';
-    debug_layer[0][16] = '=';
-    debug_layer[0][17] = '0' + g;
-
-    debug_layer[0][19] = 'B';
-    debug_layer[0][20] = '=';
-    debug_layer[0][21] = '0' + b;
 }
 
 
@@ -296,9 +314,9 @@ void run_game() {
         globalTimer++;
         usleep(TICK_SPEED);
 
-        //Everything in this if statement only happens once every 'PHYSICS_SPEED' microseconds. Anything outside the loop is done every 'TICK_SPEED' microseconds.
+        // Run gravity at the slowest physics speed always
         ticks++;
-        if (ticks % (PHYSICS_SPEED1 / TICK_SPEED) == 0) {
+        if (ticks % (physSpeeds[0] / TICK_SPEED) == 0) {
             if (!upsideDown) {
                 if ((scrollX+marioX) >= 436 && (scrollX+marioX) < 695 && marioY <= 8) {
                     upsideDown = TRUE;
@@ -315,6 +333,7 @@ void run_game() {
             calculate_gravity();
         }
         
+        // Run game physics at the current physics speed
         if (ticks % (physSpeeds[physSpeedIndex] / TICK_SPEED) == 0) {
             run_game_physics();
             gameTimer++;
@@ -329,6 +348,8 @@ void run_game() {
             if (scrollX > physSpeedCutoffs[physSpeedIndex]) {
                 physSpeedIndex++;
                 //play "speed up" sequence
+                speedUpText = TRUE;
+                speedUpTextTimer = SPEED_UP_TIMER_LENGTH;
             }
         
 
@@ -341,6 +362,8 @@ void run_game() {
                 show_win_screen();
                 break;
             }
+
+            update_speed_up_layer();
         }
 
         if (marioInvincible) {
@@ -350,7 +373,7 @@ void run_game() {
             init_pair(5, COLOR256(0, 0, 1), COLOR256(0, 0, 1));  // restore border layer
         }
 
-        update_debug_layer();
+        // update_debug_layer();
         assemble_layers();
         render_screen();
     }
