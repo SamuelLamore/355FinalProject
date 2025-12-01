@@ -99,8 +99,8 @@ int check_ground(int x, int y) {
 int check_mario_ground() {
     int addVal = (upsideDown) ? -2 : 1;
     int unit = (upsideDown) ? -1 : 1;
-    if (check_ground(marioX, marioY+addVal) || check_ground(marioX+1, marioY+addVal) // check ground tiles
-        || (!marioGrounded && marioVelocity <= 0 && check_ground(marioX+2, marioY+addVal) && !check_ground(marioX+2, marioY+addVal+unit))) {
+    if (check_ground(marioX, marioY+addVal) || check_ground(marioX+1, marioY+addVal)
+        || (check_ground(marioX+2, marioY+addVal) && !check_ground(marioX+2, marioY+addVal+unit))) { // check ground tiles
         return marioGrounded = TRUE;
     } else {
         return marioGrounded = FALSE;
@@ -150,7 +150,9 @@ void calculate_gravity() {
 
 
 void check_wall_collisions(void) {
-    if (check_ground(marioX+2, marioY) || check_ground(marioX+2, marioY-1)) {
+    if (check_ground(marioX+1, marioY) && !check_ground(marioX+1, marioY-1)) {
+        marioY--;
+    } else if (check_ground(marioX+1, marioY) ||check_ground(marioX+2, marioY) || check_ground(marioX+2, marioY-1)) {
         marioX--;
         if (marioX < 1) {
             marioAlive = FALSE;
@@ -202,7 +204,7 @@ void check_enemy_collision() {
 // Added by Abraham
 void check_win_condition() {
     // Win condition: mario reaches the end of the level (scrollX >= LEVEL_SIZE - 100)
-    if (scrollX >= LEVEL_SIZE - 100) {
+    if ((scrollX+marioX) >= LEVEL_SIZE - 100) {
         gameWon = TRUE;
     }
 }
