@@ -30,6 +30,8 @@ int physSpeedCutoffs[] = {
     9999,
 };
 
+// Primary Author: Samuel Lamore
+// Displays the score
 void update_hud() {
     char scroll[7];
     snprintf(scroll, sizeof(scroll), "%06d", score);
@@ -50,6 +52,8 @@ void update_hud() {
 
 #define SPEED_UP_TIMER_LENGTH 34
 
+// Primary Author: Samuel Lamore
+// When the game speed increases, display a graphic to indicate this
 void update_speed_up_layer() {
     if (speedUpText) {
         if (speedUpTextTimer > SPEED_UP_TIMER_LENGTH-10 && (speedUpTextTimer & 1) == 0 && marioX < 25) {
@@ -65,6 +69,8 @@ void update_speed_up_layer() {
 }
 
 
+// Primary Author: Samuel Lamore
+// Check if ground exists at a given coordinate
 int check_ground(int x, int y) {
     if (ground_layer[y][x] != ' ') { // check ground tile
         return TRUE;
@@ -73,6 +79,8 @@ int check_ground(int x, int y) {
     }
 }
 
+// Primary Author: Samuel Lamore
+// Check if ground exists underneath mario
 int check_mario_ground() {
     int addVal = (upsideDown) ? -2 : 1;
     int unit = (upsideDown) ? -1 : 1;
@@ -85,6 +93,8 @@ int check_mario_ground() {
 }
 
 
+// Primary Author: Samuel Lamore
+// Check if ground exists directly above mario
 int check_mario_ceiling() {
     int addVal = (upsideDown) ? 1 : -2;
     if (check_ground(marioX, marioY+addVal) || check_ground(marioX+1, marioY+addVal)) { // check ground tiles
@@ -95,6 +105,8 @@ int check_mario_ceiling() {
 }
 
 
+// Primary Author: Samuel Lamore
+// Apply gravity and move mario vertically based on his velocity
 void calculate_gravity() {
     int absVel = (marioVelocity > 0) ? marioVelocity : -marioVelocity; // get absolute value of the velocity
     int unitVel = (marioVelocity > 0) ? 1 : -1; // get the sign of the velocity
@@ -126,6 +138,8 @@ void calculate_gravity() {
 }
 
 
+// Primary Author: Samuel Lamore
+// Check if mario is hitting a wall
 void check_wall_collisions(void) {
     if (check_ground(marioX+1, marioY) && !check_ground(marioX+1, marioY-1)) {
         marioY--;
@@ -138,6 +152,8 @@ void check_wall_collisions(void) {
 }
 
 
+// Primary Author: Samuel Lamore
+// Get the input
 void get_input() {
     int ch = getch();
     if (ch == ' ' && marioGrounded) {
@@ -145,7 +161,8 @@ void get_input() {
     }
 }
 
-
+// Primary Author: Samuel Lamore
+// Check if mario has touched a star
 void check_powerup() {
     if (
         powerups_layer[marioY][marioX] != ' ' ||
@@ -163,6 +180,8 @@ void check_powerup() {
     }
 }
 
+// Primary Author: Samuel Lamore
+// Check if mario has touched a coin
 void check_coin() {
     if (
         coins_layer[marioY][marioX] != ' ' ||
@@ -179,7 +198,9 @@ void check_coin() {
     }
 }
 
-// Added by Abraham
+
+// Primary Author: Abraham Flores
+// Check if mario has hit an enemy
 void check_enemy_collision() {
     // Check if mario hits an obstacle (enemy)
     if (!marioInvincible) {
@@ -194,7 +215,8 @@ void check_enemy_collision() {
     }
 }
 
-// Added by Abraham
+// Primary Author: Abraham Flores
+// Check if the end of the level has been reached
 void check_win_condition() {
     // Win condition: mario reaches the end of the level (scrollX >= LEVEL_SIZE - 100)
     if (scrollX >= LEVEL_SIZE - 100) {
@@ -203,7 +225,8 @@ void check_win_condition() {
 }
 
 
-// Added by Abraham
+// Primary Author: Abraham Flores
+// Display the game over screen if mario has died
 void show_game_over_screen() {
     clear();
     attron(COLOR_PAIR(3));
@@ -228,7 +251,8 @@ void show_game_over_screen() {
     exit(0);
 }
 
-// Added by Abraham
+// Primary Author: Abraham Flores
+// Displays the win screen when the game ends
 void show_win_screen() {
     clear();
     attron(COLOR_PAIR(7));
@@ -252,6 +276,9 @@ void show_win_screen() {
     exit(0);
 }
 
+
+// Primary Author: Samuel Lamore
+// The main physics loop that runs each "frame"
 void run_game_physics() {
     //update based on input/physics
     check_wall_collisions();
@@ -274,6 +301,8 @@ void run_game_physics() {
 }
 
 
+// Primary Author: Samuel Lamore
+// Check if there is already a star somewhere in the level
 int check_if_star_exists() {
     for (int y = 2; y < 15; y++) {
         for (int x = 0; x < 100; x++) {
@@ -285,6 +314,8 @@ int check_if_star_exists() {
     return FALSE;
 }
 
+// Primary Author: Samuel Lamore
+// Spawn a star if one doesn't already exist
 void spawn_star() {
     if (check_if_star_exists()) { // can't spawn a star if one already exists
         return;
@@ -310,6 +341,9 @@ void spawn_star() {
     }
 }
 
+
+// Primary Author: Samuel Lamore
+// Spawn a coin somewhere
 void spawn_coin() {
     for (int i = 0; i < 6; i++) {
         if (ground_layer[9+i][99] != ' ' && ground_layer[9+i-1][99] == ' ') {
@@ -331,6 +365,8 @@ void spawn_coin() {
 }
 
 
+// Primary Author: Samuel Lamore
+// The main game loop
 void run_game() {
     init_layers();
 

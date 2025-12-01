@@ -72,8 +72,6 @@ char mario_layer_init[16][LEVEL_SIZE] = {
     "                                                                                                    ",
     "                                                                                                    ",
     "                                                                                                    ",
-    // "/\\",
-    // "MM",
 };
 
 
@@ -230,6 +228,8 @@ int layer_colors[NUM_LAYERS] = {
 
 extern int upsideDown;
 
+// Primary Author: Samuel Lamore
+// Print mario at his current coordinates
 void set_mario_position(int x, int y) {
     if (y < 3) { // set bounds
         y = 3;
@@ -265,18 +265,24 @@ void set_mario_position(int x, int y) {
 
 int scrollX = 0; // how many horizontal units have been scrolled
 
+// Primary Author: Samuel Lamore
+// Shift a row forward one char
 void shift_row(char *row) {
     for (int x = 0; row[x] != '\0'; x++) {
         row[x] = row[x+1];
     }
 }
 
+// Primary Author: Samuel Lamore
+// Get the next char from the initializer layer and add it to the end of the drawing layers
 void update_row(char *row, int i, int y) {
     row[99] = layer_init[i][y][scrollX+99];
 }
 
 
 
+// Primary Author: Samuel Lamore
+// Scroll the layers of the level that are supposed to move
 void scroll_level() {
     //scrolls background, ground, and obstacles layers
     scrollX++;
@@ -289,6 +295,8 @@ void scroll_level() {
     } 
 }
 
+// Primary Author: Samuel Lamore
+// Get rid of the "speed up" graphic
 void clear_speed_up_graphic() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 44; x++) {
@@ -297,6 +305,8 @@ void clear_speed_up_graphic() {
     }
 }
 
+// Primary Author: Samuel Lamore
+// Print "SPEED UP" on screen to indicate the speed increasing
 void render_speed_up_graphic(int timer) {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 44; x++) {
@@ -316,6 +326,8 @@ short r = 0;
 short g = 0;
 short b = 0;
 
+// Primary Author: Samuel Lamore
+// Cycle through the rainbow for the star powerup
 void update_invincibility_colors(int timer, int invincTimer) {
     int hue = (timer << 3) % 360;
     float sat = 1.0f;
@@ -342,7 +354,8 @@ void update_invincibility_colors(int timer, int invincTimer) {
 }
 
 
-
+// Primary Author: Samuel Lamore
+// Initialize colors
 void set_up_colors() {
     start_color();
     init_pair(1, COLOR256(4, 5, 5), COLOR_BLACK);   // background layer
@@ -358,6 +371,8 @@ void set_up_colors() {
 }
 
 
+// Primary Author: Samuel Lamore
+// Add a cloud to the background at the given coordinates
 void add_cloud(int x, int y, int cloud) {
     for (int yCord = 0; yCord < CLOUD_HEIGHT; yCord++) {
         for (int xCord = 0; clouds[cloud][yCord][xCord] != '\0'; xCord++) {
@@ -369,6 +384,8 @@ void add_cloud(int x, int y, int cloud) {
 }
 
 
+// Primary Author: Samuel Lamore
+// Determine random cloud generation
 void add_background_elements() {
     for (int i = 0; i < (LEVEL_SIZE/30) - 3; i++) {
         if ((rand() % 3) != 0 && (i*30 < 400 || i*30 > 700)) {
@@ -380,6 +397,8 @@ void add_background_elements() {
     }
 }
 
+// Primary Author: Samuel Lamore
+// Copy the contents of the initializer layers into the drawing layers
 void init_layers() {
     add_background_elements();
     for (int i = 0; i < NUM_LAYERS; i++) {
@@ -391,7 +410,8 @@ void init_layers() {
 }
 
 
-
+// Primary Author: Samuel Lamore
+// Combine the drawing layers together into the main screen matrix
 void assemble_layers() {
     //first: clear screen matrix
     for (int y = 0; y < 16; y++) {
@@ -419,6 +439,8 @@ void assemble_layers() {
     }
 }
 
+// Primary Author: Samuel Lamore
+// Render each char of the screen matrix
 void render_screen() {
     for (int y = 0; y < 16; y++) {
         for (int x = 0; x < 100; x++) {

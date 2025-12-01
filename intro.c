@@ -1,44 +1,6 @@
 #define NUM_INTRO_LAYERS 5
 
 
-// char intro_star[16][16] = {
-//     "               ",
-//     "               ",
-//     "       .       ",
-//     "      . .      ",
-//     "     .   .     ",
-//     ".....     .....",
-//     " .           . ",
-//     "  .         .  ",
-//     "   .   .   .   ",
-//     "  .   . .   .  ",
-//     " .  ..   ..  . ",
-//     "....       ....",
-//     "               ",
-//     "               ",
-//     "               ",
-//     "               ",
-// };
-
-char intro_star[5][5] = {
-    // "   * * *   ",
-    // "    ***    ",
-    // " * * * * * ",
-    // "    ***    ",
-    // "   * * *   ",
-    // "   *****   ",
-    // "***     ***",
-    // "*         *",
-    // "***     ***",
-    // "   *****   ",
-    "*****",
-    "*...*",
-    "*...*",
-    "*...*",
-    "*****",
-};
-
-
 char *introBlock11[4] = {
     "                                                                                   ### ###          ",
     "                                                                                   #  #  #          ",
@@ -239,6 +201,8 @@ int intro_layer_colors[NUM_INTRO_LAYERS] = {
 };
 
 
+// Primary Author: Samuel Lamore
+// Highlights a given letter in the "PRESS ANY KEY" ascii
 void assemble_start_block(int blockNum) {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 100; x++) {
@@ -248,6 +212,8 @@ void assemble_start_block(int blockNum) {
 }
 
 
+// Primary Author: Samuel Lamore
+// Combines all the char layers together
 void assemble_intro_layers() {
     //first: clear screen matrix
     for (int y = 0; y < 16; y++) {
@@ -273,13 +239,16 @@ void assemble_intro_layers() {
 
 
 
+// Primary Author: Samuel Lamore
+// Shifts a given row to the right one space
 void shift_row_right(char *row) {
     for (int x = 98; x >= 0; x--) {
         row[x+1] = row[x];
     }
 }
 
-
+// Primary Author: Samuel Lamore
+// Moves forward (and backward) the dash marks in the background
 void update_dashes() {
     for (int y = 0; y < 16; y++) {
         int index = 0;
@@ -307,6 +276,8 @@ void update_dashes() {
 }
 
 
+// Primary Author: Samuel Lamore
+// Print each character in the screen matrix
 void render_intro_screen() {
     for (int y = 0; y < 16; y++) {
         for (int x = 0; x < 100; x++) {
@@ -324,6 +295,8 @@ void render_intro_screen() {
 
 
 
+// Primary Author: Samuel Lamore
+// Runs the loop for the title screen
 void intro_screen() {
     init_pair(8, COLOR256(3, 0, 0), COLOR_BLACK);  // start layer
     init_pair(9, COLOR256(5, 0, 0), COLOR_BLACK);  // under start layer

@@ -1,8 +1,12 @@
+// Primary Author: Samuel Lamore
+// Helper for hsv_to_rgb
 float my_floor(float x) {
     int i = (int)x;
     return (x < 0 && x != (float)i) ? (float)(i - 1) : (float)i;
 }
 
+// Primary Author: Samuel Lamore
+// Converts hsv values into 0-5 r, g, and b values that can be used to color the curses output
 void hsv_to_rgb(int hue, float s, float v, short *red, short *green, short *blue) {
     float C = s*v;
     float h2 = (float)hue / 60.0f;

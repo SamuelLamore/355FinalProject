@@ -19,6 +19,9 @@
 #include "intro.c"
 
 
+
+// Primary Author: Samuel Lamore
+// Kills Program when ctrl+c is pressed
 void kill_program(int signum) {
     endwin();
     curs_set(1);
@@ -26,6 +29,8 @@ void kill_program(int signum) {
 }
 
 
+// Primary Author: Samuel Lamore
+// The main method
 int main() {
     signal(2, kill_program);
 
@@ -38,7 +43,6 @@ int main() {
     noecho();
     nodelay(stdscr, TRUE);
 
-    //[TODO] Before run_game(), there should be an intro screen that only ends if you enter a key
     intro_screen();
 
     //run main game logic
