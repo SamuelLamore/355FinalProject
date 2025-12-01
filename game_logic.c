@@ -30,50 +30,27 @@ int physSpeedCutoffs[] = {
     9999,
 };
 
-
-// void update_debug_layer() {
-//     if (marioGrounded) {
-//         debug_layer[0][2] = 'G';
-//     } else {
-//         debug_layer[0][2] = ' ';
-//     }
-
-
-//     char scroll[4];
-//     snprintf(scroll, sizeof(scroll), "%03d", scrollX);
-//     debug_layer[0][99] = scroll[2];
-//     debug_layer[0][98] = scroll[1];
-//     debug_layer[0][97] = scroll[0];
-
-
-//     debug_layer[0][5] = 'V';
-//     debug_layer[0][6] = '=';
-//     if (marioVelocity < 0) {
-//         debug_layer[0][7] = '-';
-//     } else {
-//         debug_layer[0][7] = ' ';
-//     }
-
-//     debug_layer[0][8] = '0' + ((marioVelocity > 0) ? marioVelocity : -marioVelocity);
-
-
-//     debug_layer[0][11] = 'R';
-//     debug_layer[0][12] = '=';
-//     debug_layer[0][13] = '0' + r;
-
-//     debug_layer[0][15] = 'G';
-//     debug_layer[0][16] = '=';
-//     debug_layer[0][17] = '0' + g;
-
-//     debug_layer[0][19] = 'B';
-//     debug_layer[0][20] = '=';
-//     debug_layer[0][21] = '0' + b;
-// }
+void update_hud() {
+    char scroll[7];
+    snprintf(scroll, sizeof(scroll), "%06d", score);
+    border_layer[0][54] = scroll[5];
+    border_layer[0][53] = scroll[4];
+    border_layer[0][52] = scroll[3];
+    border_layer[0][51] = scroll[2];
+    border_layer[0][50] = scroll[1];
+    border_layer[0][49] = scroll[0];
+    border_layer[0][48] = ' ';
+    border_layer[0][47] = ':';
+    border_layer[0][46] = 'E';
+    border_layer[0][45] = 'R';
+    border_layer[0][44] = 'O';
+    border_layer[0][43] = 'C';
+    border_layer[0][42] = 'S';
+}
 
 #define SPEED_UP_TIMER_LENGTH 34
 
 void update_speed_up_layer() {
-
     if (speedUpText) {
         if (speedUpTextTimer > SPEED_UP_TIMER_LENGTH-10 && (speedUpTextTimer & 1) == 0 && marioX < 25) {
             marioX++;
@@ -186,6 +163,22 @@ void check_powerup() {
     }
 }
 
+void check_coin() {
+    if (
+        coins_layer[marioY][marioX] != ' ' ||
+        coins_layer[marioY-1][marioX] != ' ' ||
+        coins_layer[marioY][marioX+1] != ' ' ||
+        coins_layer[marioY-1][marioX+1] != ' '
+        ) { // check ground tile
+            coins_layer[marioY][marioX] = ' ';
+            coins_layer[marioY-1][marioX] = ' ';
+            coins_layer[marioY][marioX+1] = ' ';
+            coins_layer[marioY-1][marioX+1] = ' ';
+
+            score += 1000;
+    }
+}
+
 // Added by Abraham
 void check_enemy_collision() {
     // Check if mario hits an obstacle (enemy)
@@ -204,7 +197,7 @@ void check_enemy_collision() {
 // Added by Abraham
 void check_win_condition() {
     // Win condition: mario reaches the end of the level (scrollX >= LEVEL_SIZE - 100)
-    if ((scrollX+marioX) >= LEVEL_SIZE - 100) {
+    if (scrollX >= LEVEL_SIZE - 100) {
         gameWon = TRUE;
     }
 }
@@ -214,10 +207,16 @@ void check_win_condition() {
 void show_game_over_screen() {
     clear();
     attron(COLOR_PAIR(3));
-    mvprintw(7, 40, "GAME OVER!");
-    mvprintw(9, 38, "You have died!"); // there are 2 ways to die - hitting an obstacle, and getting crushed by the walls scrolling into the border
+    mvprintw(3, 40, "GAME OVER!");
+    mvprintw(5, 38, "You have died!"); // there are 2 ways to die - hitting an obstacle, and getting crushed by the walls scrolling into the border
     // mvprintw(9, 35, "You hit an obstacle!");
-    mvprintw(11, 33, "Press any key to exit...");
+    mvprintw(7, 33, "Press any key to exit...");
+    
+    char scroll[7];
+    snprintf(scroll, sizeof(scroll), "%06d", score);
+    mvprintw(9, 35, "Final Score: ");
+    mvprintw(9, 35+13, "%s", scroll);
+
     attroff(COLOR_PAIR(3));
     refresh();
     
@@ -233,9 +232,15 @@ void show_game_over_screen() {
 void show_win_screen() {
     clear();
     attron(COLOR_PAIR(7));
-    mvprintw(7, 40, "YOU WIN!");
-    mvprintw(9, 32, "You completed the level!");
-    mvprintw(11, 32, "Press any key to exit...");
+    mvprintw(3, 40, "YOU WIN!");
+    mvprintw(5, 32, "You completed the level!");
+
+    char scroll[7];
+    snprintf(scroll, sizeof(scroll), "%06d", score);
+    mvprintw(7, 35, "Final Score: ");
+    mvprintw(7, 35+13, "%s", scroll);
+
+    mvprintw(9, 32, "Press any key to exit...");
     attroff(COLOR_PAIR(7));
     refresh();
     
@@ -252,8 +257,10 @@ void run_game_physics() {
     check_wall_collisions();
 
     set_mario_position(marioX, marioY);
+    score += 100;
     scroll_level();
 
+    check_coin();
     check_powerup();
     check_enemy_collision();
     check_win_condition();
@@ -301,9 +308,28 @@ void spawn_star() {
             break;
         }
     }
-
-
 }
+
+void spawn_coin() {
+    for (int i = 0; i < 6; i++) {
+        if (ground_layer[9+i][99] != ' ' && ground_layer[9+i-1][99] == ' ') {
+            if (ground_layer[9+i-2][99] == ' ' && rand() & 1) {
+                coins_layer[9+i-2][99] = 'C';
+            } else {
+                coins_layer[9+i-1][99] = 'C';
+            }
+            break;
+        } else if (ground_layer[9-i][99] != ' ' && ground_layer[9-i-1][99] == ' ') {
+            if (ground_layer[9-i-2][99] == ' ' && rand() & 1) {
+                coins_layer[9-i-2][99] = 'C';
+            } else {
+                coins_layer[9-i-1][99] = 'C';
+            }
+            break;
+        }
+    }
+}
+
 
 void run_game() {
     init_layers();
@@ -344,6 +370,10 @@ void run_game() {
                 if (rand() % 10 == 0) {
                     spawn_star();
                 }
+
+                if (marioInvincible) {
+                    spawn_coin();
+                }
             }
 
             //Control game speed
@@ -368,14 +398,10 @@ void run_game() {
             update_speed_up_layer();
         }
 
-        if (marioInvincible) {
-            update_invincibility_colors(globalTimer, marioInvincibilityTimer);
-        } else {
-            init_pair(4, COLOR_RED, COLOR_BLACK);  // restore mario layer
-            init_pair(5, COLOR256(0, 0, 1), COLOR256(0, 0, 1));  // restore border layer
-        }
+        update_invincibility_colors(globalTimer, marioInvincibilityTimer);
 
         // update_debug_layer();
+        update_hud();
         assemble_layers();
         render_screen();
     }
