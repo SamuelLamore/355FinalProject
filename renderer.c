@@ -349,7 +349,7 @@ void update_invincibility_colors(int timer, int invincTimer) {
         init_pair(5, COLOR256(r, g, b), COLOR256(r, g, b));
     } else {
         init_pair(4, COLOR_RED, COLOR_BLACK);  // restore mario layer
-        init_pair(5, COLOR256(0, 0, 1), COLOR256(0, 0, 1));  // restore border layer
+        init_pair(5, COLOR256(3, 3, 3), COLOR256(0, 0, 1));  // restore border layer
     }
 }
 
@@ -362,7 +362,7 @@ void set_up_colors() {
     init_pair(2, COLOR_GREEN, COLOR_BLACK);  // ground layer
     init_pair(3, COLOR256(5, 2, 0), COLOR_BLACK);  // obstacles layer
     init_pair(4, COLOR_RED, COLOR_BLACK);  // mario layer
-    init_pair(5, COLOR256(0, 0, 1), COLOR256(0, 0, 1));  // border layer
+    init_pair(5, COLOR256(3, 3, 3), COLOR256(0, 0, 1));  // border layer
     init_pair(6, COLOR_BLACK, COLOR_BLACK);  // EMPTY layer
     init_pair(7, COLOR_YELLOW, COLOR_BLACK);  // Coin layer
     init_pair(17, COLOR256(4, 1, 4), COLOR_BLACK);  // ground layer (upside down)
